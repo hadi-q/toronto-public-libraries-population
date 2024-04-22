@@ -1,17 +1,16 @@
-# Toronto Real Estate Analysis
+# Mapping Toronto's Libraries, Part 2: Understanding the Relationship Between Income and Library Locations
 
 ## Overview
 
-This repo looks at Toronto's real estate market to understand how housing prices correlate with how well serviced a neighbourhood is by public libraries.
+These are the files needed to build the report, *Mapping Toronto's Libraries, Part 2: Understanding the Relationship Between Income and Library Locations*. The report analyzes the Library Branch General Information dataset from Open Data Toronto, and adds additional insights from StatCan data about incomes and other variables at a neighbourhood or census tract level. The goal of this paper is to build on the original paper's analysis to determine whether there is a correlation between a neighbourhood's income and its accessibility to Toronto Public Library branches.
 
 ## File Structure
 
 The repo is structured as:
 
--   `data/raw_data` contains the raw data as obtained from TRREB and OpenDataToronto.
--   `data/analysis_data` contains the cleaned dataset that was constructed.
--   `model` contains fitted models. 
--   `other` contains relevant literature, details about LLM chat interactions, and sketches.
+-   `data/raw_data` contains the raw data as obtained from OpenDataToronto and StatCan.
+-   `data/analysis_data` contains the cleaned datasets that were constructed.
+-   `other` contains sketches that were created to plan out the graphs and charts constructed.
 -   `paper` contains the files used to generate the paper, including the Quarto document and reference bibliography file, as well as the PDF of the paper. 
 -   `scripts` contains the R scripts used to simulate, download and clean data.
 

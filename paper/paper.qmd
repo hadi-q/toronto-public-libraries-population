@@ -1,13 +1,12 @@
 ---
-title: "My title"
-subtitle: "My subtitle if needed"
-author: 
-  - First author
-  - Another author
-thanks: "Code and data are available at: LINK."
+title: "Mapping Toronto's Libraries, Part 2"
+title-block-banner: true
+subtitle: "Understanding the Relationship Between Income and Library Locations"
+author: Hadi Ahmad
+thanks: "Code and data are available at: https://github.com/hadi-q/toronto-public-libraries-income. This paper builds on the work of a previous paper by the author, at: https://github.com/hadi-q/toronto-public-libraries"
 date: today
-date-format: long
-abstract: "First sentence. Second sentence. Third sentence. Fourth sentence."
+date-format: "D MMMM YYYY"
+abstract: "The report analyzes the Library Branch General Information dataset from Open Data Toronto, and adds additional insights from StatCan data about incomes and other variables at a neighbourhood or census tract level. The goal of this paper is to build on the original paper's analysis to determine whether there is a correlation between a neighbourhood's income and its accessibility to Toronto Public Library branches."
 format: pdf
 number-sections: true
 bibliography: references.bib
