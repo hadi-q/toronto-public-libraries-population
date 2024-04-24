@@ -17,18 +17,33 @@ bibliography: references.bib
 #| warning: false
 #| message: false
 
+# install.packages("tidyverse")
+# install.packages("ggplot2")
+# install.packages("dplyr")
+# install.packages("readr")
+# install.packages("janitor")
+# install.packages("opendatatoronto")
+# install.packages("knitr")
+# install.packages("here")
+
 library(tidyverse)
-library(palmerpenguins)
+library(ggplot2)
+library(dplyr)
+library(readr)
+library(janitor)
+library(opendatatoronto)
+library(knitr)
+library(here)
 ```
 
 
 # Introduction
 
-You can and should cross-reference sections and sub-sections. We use @citeR and @rohan.
+It is difficult to underestimate the role that libraries have played in shaping knowledge in the western world. [UK Victorian era to improve lower classes from 314]
 
-The remainder of this paper is structured as follows. @sec-data....
+[Since recovered from cybersecurity attack]
 
-
+The previous paper analyzed the distribution of the Toronto Public Library system's 100 branches to determine how accessible its branches are. Its key findings included the fact that, despite large variances in the physical size of branches, there was less variance in the square footage of library space available per ward. However, it did not consider other factors that could determine accessibility of branches, like proximity to public transportation or the income of the neighbourhoods that do have branches compared to those that do not. This paper attempts to address that shortfall, by using household income and population data from StatCan.
 
 # Data {#sec-data}
 
