@@ -1,44 +1,64 @@
 #### Preamble ####
-# Purpose: Cleans the raw plane data recorded by two observers..... [...UPDATE THIS...]
-# Author: Rohan Alexander [...UPDATE THIS...]
-# Date: 6 April 2023 [...UPDATE THIS...]
-# Contact: rohan.alexander@utoronto.ca [...UPDATE THIS...]
+# Purpose: Cleans the Toronto library and census data based on the needed parameters
+# Author: Hadi Ahmad
+# Date: 24 April 2024
+# Contact: hadiq.ahmad@mail.utoronto.ca
 # License: MIT
-# Pre-requisites: [...UPDATE THIS...]
-# Any other information needed? [...UPDATE THIS...]
+# Pre-requisites: N/A
 
 #### Workspace setup ####
 library(tidyverse)
+library(janitor)
 
 #### Clean data ####
-raw_data <- read_csv("inputs/data/plane_data.csv")
+library_raw_data <- read_csv("data/raw_data/library_raw_data.csv")
+library_clean_data <- clean_names(library_raw_data)
 
-cleaned_data <-
-  raw_data |>
-  janitor::clean_names() |>
-  select(wing_width_mm, wing_length_mm, flying_time_sec_first_timer) |>
-  filter(wing_width_mm != "caw") |>
-  mutate(
-    flying_time_sec_first_timer = if_else(flying_time_sec_first_timer == "1,35",
-                                   "1.35",
-                                   flying_time_sec_first_timer)
-  ) |>
-  mutate(wing_width_mm = if_else(wing_width_mm == "490",
-                                 "49",
-                                 wing_width_mm)) |>
-  mutate(wing_width_mm = if_else(wing_width_mm == "6",
-                                 "60",
-                                 wing_width_mm)) |>
-  mutate(
-    wing_width_mm = as.numeric(wing_width_mm),
-    wing_length_mm = as.numeric(wing_length_mm),
-    flying_time_sec_first_timer = as.numeric(flying_time_sec_first_timer)
-  ) |>
-  rename(flying_time = flying_time_sec_first_timer,
-         width = wing_width_mm,
-         length = wing_length_mm
-         ) |> 
-  tidyr::drop_na()
+# Selected rows needed for analysis
+library_clean_data <-
+  library_clean_data |>
+  select(
+    physical_branch, branch_name, square_footage, ward_no, ward_name, present_site_year
+  )
+
+# Get rid of non-physical locations e.g. phone answering line
+library_clean_data <-
+  library_clean_data |>
+  filter(physical_branch > 0)
+head(library_clean_data)
+
+# Remove physical_branch column
+library_clean_data <-
+  library_clean_data |>
+  select(
+    branch_name, square_footage, ward_no, ward_name, present_site_year
+  )
+
+library_clean_data
+# Test cases
+
+# Ensure that each ward is randomly assigned >1 library branch
+# Wherein false = >1 library branch in this ward
+library_clean_data$Ward |>
+  unique() == c("Beaches-East York", "Davenport", "Don Valley East", 
+                "Don Valley North", "Don Valley West", "Eglinton-Lawrence", 
+                "Etobicoke Centre", "Etobicoke North", "Etobicoke-Lakeshore", 
+                "Humber River-Black Creek", "Parkdale-High Park", 
+                "Scarborough Centre", "Scarborough North", "Scarborough Southwest", 
+                "Scarborough-Agincourt", "Scarborough-Guildwood", 
+                "Scarborough-Rouge Park", "Spadina-Fort York", "Toronto Centre", 
+                "Toronto-Danforth", "Toronto-St. Paul's", "University-Rosedale", 
+                "Willowdale", "York Centre", "York South-Weston")
+# Ensure that 25 wards are represented
+# Wherein true = 25 unique wards are present in the actual data
+library_clean_data$Ward |>
+  unique() |>
+  length() == 25
+
+# Ward data no longer included in dataset
+# WARD DATA
+# read.xlsx() format obtained from https://stackoverflow.com/questions/51930684/read-excel-file-and-select-specific-rows-and-columns
+# read.xlsx("inputs/data/wards_raw_data.xlsx", "sheet_name", rowIndex = 5:700, colIndex = 1:10)
 
 #### Save data ####
-write_csv(cleaned_data, "outputs/data/analysis_data.csv")
+write_csv(library_clean_data, "outputs/data/analysis_data.csv")
