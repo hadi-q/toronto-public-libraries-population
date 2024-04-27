@@ -3,11 +3,12 @@ title: "Mapping Toronto's Libraries, Part 2"
 title-block-banner: true
 subtitle: "Understanding the Relationship Between Income and Library Locations"
 author: Hadi Ahmad
-thanks: "Code and data are available at: https://github.com/hadi-q/toronto-public-libraries-income. This paper builds on the work of a previous paper by the author, at: https://github.com/hadi-q/toronto-public-libraries"
+thanks: "Code and data are available at: https://github.com/hadi-q/toronto-public-libraries-income. This paper builds on the work of a previous paper by the author, at: https://github.com/hadi-q/toronto-public-libraries."
 date: today
 date-format: "D MMMM YYYY"
 abstract: "The report analyzes the Library Branch General Information dataset from Open Data Toronto, and adds additional insights from StatCan data about incomes and other variables at a neighbourhood or census tract level. The goal of this paper is to build on the original paper's analysis to determine whether there is a correlation between a neighbourhood's income and its accessibility to Toronto Public Library branches."
 format: pdf
+toc: true
 number-sections: true
 bibliography: references.bib
 ---
@@ -17,6 +18,10 @@ bibliography: references.bib
 #| warning: false
 #| message: false
 
+# force graph labels to standard notation
+# copied from https://stackoverflow.com/questions/14563989/force-r-to-stop-plotting-abbreviated-axis-labels-scientific-notation-e-g-1e
+options(scipen=10000)
+
 # install.packages("tidyverse")
 # install.packages("ggplot2")
 # install.packages("dplyr")
@@ -25,7 +30,10 @@ bibliography: references.bib
 # install.packages("opendatatoronto")
 # install.packages("knitr")
 # install.packages("here")
-
+# install.packages("xfun", dependencies=TRUE)
+# install.packages("arrow")
+# install.packages("geojsonR")
+# install.packages("sf")
 library(tidyverse)
 library(ggplot2)
 library(dplyr)
@@ -34,202 +42,213 @@ library(janitor)
 library(opendatatoronto)
 library(knitr)
 library(here)
-```
+library(arrow)
+#library(geojsonR)
+#library(sf)
 
+#### Read in cleaned data ####
+analysis_data = read_csv(
+  file = here("data/analysis_data/analysis_data.csv"),
+  show_col_types = FALSE
+)
+
+# read_csv used due to issues in data collection and use of arrow library
+analysis_data_sc = read_csv( # stats canada (census)
+  file = here("data/analysis_data/analysis_data_census.csv"),
+  show_col_types = FALSE
+)
+
+# analysis_data_wm = geojsonR::shiny_from_JSON("data/raw_data/CityWardsData4326.geojson") 
+#%>% st_transform(4326) # safety of unprojected CRS; from https://stackoverflow.com/questions/68784976/reading-in-a-geojson-file-with-geojsonio-geojsonr
+
+```
 
 # Introduction
 
-It is difficult to underestimate the role that libraries have played in shaping knowledge in the western world. [UK Victorian era to improve lower classes from 314]
+It is difficult to underestimate the role that libraries have played in shaping knowledge in the modern world. From the stores of the Library of Alexandria in centuries past, to the freely accessible Victorian England institutions that brought class and sophistication to ordinary citizens and not just members of nobility, libraries have repeatedly been staples of advanced societies, serving as bellwethers of progress. With the functions of providing information and education, access to resources, systems to categorize and archive materials, and creating diverse social environments, they transcend class and cultural barriers to provide public access to resources.
 
-[Since recovered from cybersecurity attack]
+Beyond their typical functions, libraries serve as community spaces, where residents of a neighbourhood can come together, meet, socialize, and learn together, free from the shackles of a broader late-capitalistic society that aims to monetize all free real estate. This highlights the importance of libraries within local communities, in terms of proximity and space made available to patrons. It stands to reason, then, that more accessible libraries would allow more people to access their services.
 
-The previous paper analyzed the distribution of the Toronto Public Library system's 100 branches to determine how accessible its branches are. Its key findings included the fact that, despite large variances in the physical size of branches, there was less variance in the square footage of library space available per ward. However, it did not consider other factors that could determine accessibility of branches, like proximity to public transportation or the income of the neighbourhoods that do have branches compared to those that do not. This paper attempts to address that shortfall, by using household income and population data from StatCan.
+But are all libraries and their resources made equal? Is it better to have more branches with less space, or fewer branches with greater capacity? Who stands to benefit the most from libraries, and do they really get those opportunities? These are the questions that led to the creation of both the previous paper and this one.
+
+The Toronto Public Library excels in its function compared to most public library systems. Creating a network of interconnected branches allows patrons to freely access resources across branches, with a particular focus on its online system and third party subscriptions provided for free to cardholders. This reduces physical barriers to accessing information. However, at the time of publication of the previous paper, the Toronto Public Library system had fallen victim to a major cybersecurity attack that took down most services from October 2023 to January 2024. At the end of January, some core online services were reinstated, bringing respite to residents who were previously forced to access the then-limited amenities solely in branch. By the publication of this paper in April 2024, all Toronto Public Library systems have been fully restored, marking an end to roughly 6 months of access limitations to services like finding books from the catalog or renewing library cards.
+
+The previous paper analyzed the distribution of the Toronto Public Library system's 100 branches to determine how well distributed its branches are at a ward level. Its key findings included the fact that, despite large variances in the physical size of branches, there was less variance in the square footage of library space available per ward. However, it did not consider other factors that could determine accessibility of branches, like proximity to public transportation or the income of the neighbourhoods that do have branches compared to those that do not. This paper attempts to address that shortfall, by using household income and population data from Statistics Canada and introducing variables like median and average household income and population density. 
+
+To build on the work of the previous paper, this paper will use Statistics Canada data on Toronto districts and compare it to ``opendatatoronto`` data on the distribution and details of Toronto's libraries. In particular, by focusing on income and broader demographic factors, this paper aims to determine the role that income and population density plays in the distribution of library branches across the city. Further analyses may look at transit accessibility to see if libraries really are accessible to all.
+
+The Data @sec-data of this paper explores the ``opendatatoronto`` and Statistics Canada data holistically, outlining tools and methods used to analyze the data and some preliminary observations from the data. The Results @sec-results introduces more observations found from the data analysis. The Discussion @sec-disc ties back the findings to its real world relevance. Lastly, the Conclusion @sec-concl summarizes key findings and outlines future areas of study.
+
+## Approach
+
+To determine the equality of access of libraries in Toronto, wealth is a key consideration. After all, libraries are more likely to be used by those from less wealthy backgrounds, those who cannot afford to buy copies of books and keep them at home. But how does one measure wealth? By definition, wealth is a measure of total assets owned by an individual. This sort of data would have to consider assets like real estate and stocks, while also deducting liabilities like mortgages or lines of credit. Information of this nature is not readily available, and even if it was, it could pose privacy issues to individuals. Aggregate data could be used instead, such as by categorizing neighbourhoods or wards by wealth. That begs the question: how else can wealth be measured at sub-municipal levels?
+
+One consideration is real estate prices. Colloquially, neighbourhoods often get classified as wealthy, middle class, or working class by residents. In the case of Toronto, Rosedale and Forest Hill may be considered wealthy, while Agincourt may be considered middle class, and Crescent Town working class. But these neighbourhood divisions do not neatly line up with available data. For instance, Toronto Regional Real Estate Board's (TRREB) quarterly report on community pricing aggregates some neighbourhoods, like Rosedale-Moore Park and Agincourt South-Malvern West. These classifications are different from Toronto's own 25 ward divisions and Statistics Canada's census tracts. Thus, the data cannot be compared across sources. As well, the TRREB spreadsheet in question was last published in the fourth quarter of 2021 - newer monthly reports are available only as formatted PDFs, which make data extraction a challenge. Even still, the spreadsheet version of the report is access restricted to only TRREB members, not the general public. 
+
+Beyond the incongruencies in data, real estate prices may not be a great way to compare wealth. Some neighbourhoods may have higher prices, but only because the properties themselves are larger. Price per square foot would thus be a better metric, as it accounts for differences in interior space. Unfortunately, square footage is rarely listed on resale properties in Ontario. While price per square foot is a metric frequently used in new condo sales, resale properties make up the vast proportion of real estate sales in Toronto, and thus only relying on new figures would not be reflective of the market. Even if price per square foot was considered, there can be great variance the number of rooms in a place of a certain square footage. For instance, 700 sq ft could represent a 1 bedroom apartment in one building or a 2 bedroom + den unit in another building. This means that there can be large differences in the utility of a space beyond just its square footage. So average price for units of each distinct bedroom count could be a better metric than purely average selling prices, but that information is only available at the aggregate municipal level, not by ward. Even still, the utility of a space could come in various forms: houses may have backyards, attics, or basements, while condos may have balconies attached to the unit or common elements shared by all residents. As a result, forms of utility are also not created evenly, challenging any means to compare them.
+
+One feasible way to consider wealth beyond the aforementioned pitfalls is to use income. Statistics Canada makes income data available at a census tract, ward, municipal, provincial, or national level, with detailed breakdowns of pre-tax and post-tax individual and household income. Thus, quality data is available to compare to library distribution data obtained from the previous paper. Federal electoral district data as published by Statistics Canada also matches up with ward data from Toronto, aligning to the 25 ward model used previously. While income is not a guaranteed means to compare wealth - it is possible to have high income and low net worth, low income and high net worth, or other combinations in between - it serves as a reasonable stand-in.
 
 # Data {#sec-data}
 
-Some of our data is of penguins (@fig-bills), from @palmerpenguins.
+Data related to Toronto Public Library branches was sourced from the Open Data Toronto portal, and extracted using the `opendatatoronto` library for `R` [@rOpendatatoronto]. In particular, one dataset was used for the graphs and analyses in this paper, which included information about all Toronto Public Library branches, their addresses, phone numbers, square footage, year of construction of the building, among other variables like whether there as a park adjacent to the library, if adult literacy classes are available, and GPS coordinates of the building. Statistics Canada data was obtained from their 2021 Census of Population through their [website](https://www12.statcan.gc.ca/census-recensement/2021/dp-pd/prof/index.cfm?Lang=E).  This data includes income, demographics, languages spoken, among other variables for each ward or electoral district in Canada.
+
+## Data Tools
+
+The data was generated, extracted, and cleaned using `R` [@citeR], leveraging functions from `tidyverse` [@rTidyverse], `ggplot2` [@rGgplot2], `dplyr` [@rDplyr], `readr` [@rReadr], `janitor` [@rJanitor], `opendatatoronto` [@rOpendatatoronto], `knitr` [@rKnitr], `here` [@rHere], and `arrow` [@rArrow].
+
+## Overview of Datasets
+
+The Toronto Public Library dataset was published by the Toronto Public Library to share information on its network, and was last updated on 29 June, 2023 in accordance with its annual updating guideline. The chosen variables of analysis were the branch name, the square footage of the library,	the ward number and	ward name of where the library is located, and the year of construction of the site. The Statistics Canada dataset was released on 9 February, 2022 after the 2021 Census was conducted, and was last updated on 15 November, 2023. Canadian censuses are conducted every 5 years, and so this dataset also references the previous 2016 census values.
+
+``Table 1`` captures details about library branches in the city. Across the 100 branches, size ranges from just 554 square feet to over 400,000 square feet. This suggests a greater range in sizes of libraries, but at a macro level, what's more important is how those branches are allocated across wards. Aggregating data across wards is more useful for making comparisons across the city. 
 
 ```{r}
-#| label: fig-bills
-#| fig-cap: Bills of penguins
+#| label: library-branches
+#| fig-cap: "Table 1: Sample of Toronto Public Library Data"
 #| echo: false
 
-ggplot(penguins, aes(x = island, fill = species)) +
-  geom_bar(alpha = 0.8) +
-  scale_fill_manual(values = c("darkorange","purple","cyan4"),
-                    guide = "none") +
-  theme_minimal() +
-  facet_wrap(~species, ncol = 1) +
-  coord_flip()
+# Col names code copied from https://bookdown.org/yihui/rmarkdown-cookbook/kable.html
+knitr::kable(head(analysis_data[, 1:5]), "simple",   col.names = c('Branch', 'Square Footage', 'Ward Number', 'Ward Name', 'Year Built'))
+
 ```
 
-Talk more about it.
-
-And also planes (@fig-planes). (You can change the height and width, but don't worry about doing that until you have finished every other aspect of the paper - Quarto will try to make it look nice and the defaults usually work well once you have enough text.)
+In the previous paper, dataframes on library branches per ward and square footage per ward were merged into a single dataframe using the `merge` function. This was done to better understand any links between the number of branches and square footage of library space. Across the city, the number of branches per ward varied from 1 (in the case of Willowdale, home to the North York Central Library), up to 7 branches, with a mean and median of 4. By comparison, square footage of library space per ward ranged from 24,444 square feet in Scarborough North to 494,632 square feet in University-Rosedale (thanks to a significant outlier, the Toronto Reference Library). This amounted to a mean of 72,517 square feet per ward, or a median of 44,303 square feet per ward. ``Table 2``, below, aggregates data into counts at a ward level.
 
 ```{r}
-#| label: fig-planes
-#| fig-cap: Relationship between wing length and width
-#| echo: false
+#| include: false
 #| warning: false
 #| message: false
 
-analysis_data <- read_csv(here::here("data/analysis_data/analysis_data.csv"))
+# new dataframe with ward name and library count
+analysis_data_by_ward_count <-
+  analysis_data |>
+    count(ward_name)
 
-analysis_data |> 
-  ggplot(aes(x = width, y = length)) +
-  geom_point(alpha = 0.8) +
-  theme_minimal() +
-  labs(x = "Wing width (mm)",
-       y = "Wing length (mm)")
-```
+# new dataframe with ward name and total sq ft
+# code copied from https://www.statology.org/sum-by-group-in-r/
+analysis_data_by_ward_sq_ft <-
+  analysis_data %>%
+  group_by(ward_name) %>%
+  summarize(Freq = sum(square_footage))
 
-Talk way more about it. 
+# merge dataframes
+# code copied from https://stackoverflow.com/questions/1299871/how-to-join-merge-data-frames-inner-outer-left-right
+analysis_data_by_ward <-
+  merge(analysis_data_by_ward_count, analysis_data_by_ward_sq_ft, by = "ward_name")
 
-
-
-# Model
-
-The goal of our modelling strategy is twofold. Firstly,...
-
-Here we briefly describe the Bayesian analysis model used to investigate... Background details and diagnostics are included in [Appendix -@sec-model-details].
-
-## Model set-up
-
-Define $y_i$ as the number of seconds that the plane remained aloft. Then $\beta_i$ is the wing width and $\gamma_i$ is the wing length, both measured in millimeters.  
-
-\begin{align} 
-y_i|\mu_i, \sigma &\sim \mbox{Normal}(\mu_i, \sigma) \\
-\mu_i &= \alpha + \beta_i + \gamma_i\\
-\alpha &\sim \mbox{Normal}(0, 2.5) \\
-\beta &\sim \mbox{Normal}(0, 2.5) \\
-\gamma &\sim \mbox{Normal}(0, 2.5) \\
-\sigma &\sim \mbox{Exponential}(1)
-\end{align}
-
-We run the model in R [@citeR] using the `rstanarm` package of @rstanarm. We use the default priors from `rstanarm`.
-
-
-### Model justification
-
-We expect a positive relationship between the size of the wings and time spent aloft. In particular...
-
-We can use maths by including latex between dollar signs, for instance $\theta$.
-
-
-# Results
-
-Our results are summarized in @tbl-modelresults.
-
-```{r}
-#| echo: false
-#| eval: true
-#| warning: false
-#| message: false
-
-library(rstanarm)
-
-first_model <-
-  readRDS(file = here::here("models/first_model.rds"))
 ```
 
 ```{r}
+#| label: library-branches-by-ward-count-and-sq-ft
+#| fig-cap: "Table 2: Count and Total Square Footage of Library Branches by Ward"
 #| echo: false
-#| eval: true
-#| label: tbl-modelresults
-#| tbl-cap: "Explanatory models of flight time based on wing width and wing length"
-#| warning: false
-
-modelsummary::modelsummary(
-  list(
-    "First model" = first_model
-  ),
-  statistic = "mad",
-  fmt = 2
+# output merged dataframe
+knitr::kable(
+  analysis_data_by_ward,
+  col.names = c('Ward Name', 'Number of Branches', 'Total Square Footage of Branches')
 )
+
 ```
 
-
-
-
-# Discussion
-
-## First discussion point {#sec-first-point}
-
-If my paper were 10 pages, then should be be at least 2.5 pages. The discussion is a chance to show off what you know and what you learnt from all this. 
-
-## Second discussion point
-
-## Third discussion point
-
-## Weaknesses and next steps
-
-Weaknesses and next steps should also be included.
-
-\newpage
-
-\appendix
-
-# Appendix {-}
-
-
-# Additional data details
-
-# Model details {#sec-model-details}
-
-## Posterior predictive check
-
-In @fig-ppcheckandposteriorvsprior-1 we implement a posterior predictive check. This shows...
-
-In @fig-ppcheckandposteriorvsprior-2 we compare the posterior with the prior. This shows... 
+One issue with ``Table 2`` is that square footage of library space at a ward level is still a relatively meaningless count. How that space is utilized by patrons is a more important consideration, because that can be used to assess equality of access. After all, higher populations put greater pressure on resources, which can impact the ability for patrons to use the library's services. Thus, it is important to also analyze the population and population density of a ward, as ``Table 3`` illustrates:
 
 ```{r}
-#| eval: true
+#| label: census-data-by-ward
+#| fig-cap: "Table 3: Population and Population Density by Ward"
 #| echo: false
-#| message: false
-#| warning: false
-#| label: fig-ppcheckandposteriorvsprior
-#| layout-ncol: 2
-#| fig-cap: "Examining how the model fits, and is affected by, the data"
-#| fig-subcap: ["Posterior prediction check", "Comparing the posterior with the prior"]
 
-pp_check(first_model) +
-  theme_classic() +
-  theme(legend.position = "bottom")
+analysis_data_sc_selected <-
+  analysis_data_sc[c('Ward', 'Population, 2021', 'Population density per square kilometre')]
+  
+knitr::kable(head(analysis_data_sc_selected[, 1:3]), "simple",   col.names = c('Ward', 'Population, 2021', 'Population density per square kilometre'))
 
-posterior_vs_prior(first_model) +
+```
+
+While variance in population is not significant between wards - values range from 94,717 to 141,751 - there is greater variation in population density. This is due to differences in housing typologies and the size of wards. In the most populated ward, Etobicoke-Lakeshore, there has been a steady increase in the amount of condos, stacked townhomes, and other higher density housing being built in proximity to the waterfront. As a result, it has also seen a substantial 9.8% gain in population over the period from 2016 to 2021.
+
+```{r}
+#| label: library-census-data-by-ward
+#| fig-cap: "Table 4: Branches and Population by Ward"
+#| echo: false
+names(analysis_data_by_ward)[names(analysis_data_by_ward) == 'ward_name'] <- 'Ward' # from https://stackoverflow.com/questions/7531868/how-to-rename-a-single-column-in-a-data-frame
+
+analysis_data_population <-
+  merge(analysis_data_by_ward, analysis_data_sc_selected, by = "Ward")
+
+analysis_data_population_clean <-
+  analysis_data_population[c('Ward', 'n', 'Freq', 'Population, 2021', 'Population density per square kilometre')]
+
+#rename columns
+names(analysis_data_population_clean)[names(analysis_data_population_clean) == 'n'] <- 'Branches'
+
+names(analysis_data_population_clean)[names(analysis_data_population_clean) == 'Freq'] <- 'Total Sq Ft'
+
+names(analysis_data_population_clean)[names(analysis_data_population_clean) == 'Population density per square kilometre'] <- 'Population Density'
+
+knitr::kable(head(analysis_data_population_clean[, 1:5]), "simple",   col.names = c('Ward', 'Branches', 'Total Sq Ft', 'Population, 2021', 'Population Density'))
+```
+
+Putting tables 2 and 3 together produces a more cohesive reference guide, as seen in ``Table 4``. By combining the number of branches, square footage of branch space, and population, it becomes easier to see which branches are burdened by having more population in proportion to available library space. 
+
+# Results {#sec-results}
+
+Based on the number of branches per ward, as outlined in ``Figure 1``, there is a fairly normal distribution of branch counts across the wards of the city. In the context being, having an equal amount of branches per ward would appear to be ideal, but the devil is of course in the details.
+
+```{r}
+#| label: library-branches-by-ward-count-bar
+#| fig-cap: "Library Branches by Ward by Count"
+#| echo: false
+# horizontal bar chart
+# copied from https://stackoverflow.com/questions/10941225/horizontal-barplot-in-ggplot2
+ggplot(analysis_data_by_ward_count, aes(x=reorder(ward_name, n), y=n)) +
+  geom_bar(stat='identity', fill="lightblue") +
+  coord_flip() +
   theme_minimal() +
-  scale_color_brewer(palette = "Set1") +
-  theme(legend.position = "bottom") +
-  coord_flip()
+  labs(x = "Wards", y = "Number of Branches", color = "Country") +
+  scale_color_brewer(palette = "Set1")
+
 ```
 
-## Diagnostics
-
-@fig-stanareyouokay-1 is a trace plot. It shows... This suggests...
-
-@fig-stanareyouokay-2 is a Rhat plot. It shows... This suggests...
+The distribution of square footage of library space is the more important consideration than pure branch counts here. The ward with the greatest amount of library space, Ward 11 (University-Rosedale), is home to six libraries, yet it would still have the most library space even with only one branch: the Toronto Reference Library. Likewise, the second highest ward, Ward 18 (Willowdale), only has one library, yet it too retains a significant amount of library space. A total of 1,812,923 square feet of library space is available across the 100 branches, averaging out to 72,517 square feet per ward. After removing Toronto Reference Library, the mean falls to 54,929 square feet. The median is 44,303 square feet. See `Figure 2` for more details.
 
 ```{r}
+#| label: library-branches-by-ward-sq-ft-bar
+#| fig-cap: "Library Branches by Ward by Square Footage"
 #| echo: false
-#| eval: true
-#| message: false
-#| warning: false
-#| label: fig-stanareyouokay
-#| fig-cap: "Checking the convergence of the MCMC algorithm"
-#| fig-subcap: ["Trace plot", "Rhat plot"]
-#| layout-ncol: 2
+# horizontal bar chart
+# copied from https://stackoverflow.com/questions/10941225/horizontal-barplot-in-ggplot2
+ggplot(analysis_data_by_ward_sq_ft, aes(x=reorder(ward_name, Freq), y=Freq)) +
+  geom_bar(stat='identity', fill="lightblue") +
+  coord_flip() +
+  theme_minimal() +
+  labs(x = "Wards", y = "Total Square Footage", color = "Country") +
+  scale_color_brewer(palette = "Set1")
 
-plot(first_model, "trace")
-
-plot(first_model, "rhat")
 ```
 
+Determining the square footage of library space available per person demonstrates where the inequalities lie. On average, there are 2.39 people per square foot of library space in Toronto. This would suggest a rather crowded library if everyone living in a ward decided to simulataneously use library resources. As York South-Weston's 35,814 square feet of space falls below the mean and median, it turns out that it is underserved by branch space. On the other hand, it's no surprise that University-Rosedale and Willowdale are the most overrepresented in library space, as these wards are home to the largest libraries. More surprisingly, however, the district with the least space per capita is Toronto-St. Paul's, located downtown. This would indicate that higher densities associated with downtown living lead to less resources available per person. 
 
+```{r}
+#| label: library-branches-by-ward-sq-ft-pop-bar
+#| fig-cap: "Library Branches by People Per Square Foot"
+#| echo: false
+# horizontal bar chart
+# copied from https://stackoverflow.com/questions/10941225/horizontal-barplot-in-ggplot2
 
-\newpage
+analysis_data_population_clean$SqFtPop = analysis_data_population_clean$`Population, 2021` / analysis_data_population_clean$`Total Sq Ft`
 
+ggplot(analysis_data_population_clean, aes(x=reorder(Ward, SqFtPop), y=Ward)) +
+  geom_bar(stat='identity', fill="lightblue") +
+  coord_flip() +
+  theme_minimal() +
+  labs(x = "Wards", y = "People Per Sq Ft", color = "Country") +
+  scale_color_brewer(palette = "Set1")
+
+```
+
+# Conclusion {#sec-concl}
+
+This study goes to show the importance of considering the people that make up a library's users when determining equality. After all, it is the patrons that make up a library that determine its success. And providing more equitable access is what helps it succeed.
 
 # References
-
-

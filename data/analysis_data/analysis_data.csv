@@ -1,20 +1,101 @@
-width,length,flying_time
-70,111,1.83
-57,127,2.32
-59,92,2.05
-70,75,1.1
-62,112,2.32
-68,103.5,0.5
-58,108,1.7
-79,114,0.86
-56,186,3.42
-87,68,1.37
-50,118,2.68
-49,186,1.83
-61,116,1.32
-60,127,1
-56,184,2.79
-69,124,1.4
-60,95,1.12
-44,137,1.28
-63,125,1.35
+branch_name,square_footage,ward_no,ward_name,present_site_year
+Albion,29000,1,Etobicoke North,2017
+Albert Campbell,28957,20,Scarborough Southwest,1971
+Alderwood,7341,3,Etobicoke-Lakeshore,1999
+Agincourt,27000,22,Scarborough-Agincourt,1991
+Armour Heights,2988,8,Eglinton-Lawrence,1982
+Annette Street,7806,4,Parkdale-High Park,1908
+Amesbury Park,6320,5,York South-Weston,1967
+Brookbanks,7933,16,Don Valley East,1968
+Black Creek,5782,7,Humber River-Black Creek,2002
+Bendale,8500,21,Scarborough Centre,1961
+Beaches,8000,19,Beaches-East York,1914
+Barbara Frum,29417,8,Eglinton-Lawrence,1992
+Bloor/Gladstone,20627,9,Davenport,1913
+Brentwood,17500,3,Etobicoke-Lakeshore,1955
+Bridlewood,8000,22,Scarborough-Agincourt,1992
+Burrows Hall,6500,23,Scarborough North,1998
+Cliffcrest,4859,20,Scarborough Southwest,2008
+Centennial,6866,6,York Centre,1966
+Cedarbrae,31506,24,Scarborough-Guildwood,1958
+City Hall,5074,10,Spadina-Fort York,1965
+North York Central Library,168022,18,Willowdale,1987
+College/Shaw,7664,11,University-Rosedale,1984
+Danforth/Coxwell,9617,19,Beaches-East York,1989
+Don Mills,21563,16,Don Valley East,1961
+Downsview,20016,6,York Centre,1962
+Deer Park,16558,12,Toronto-St. Paul's,1952
+Dawes Road,6740,19,Beaches-East York,1976
+Davenport,3604,12,Toronto-St. Paul's,1988
+Dufferin/St. Clair,11208,9,Davenport,1921
+Eatonville,12203,2,Etobicoke Centre,1964
+Elmbrook Park,3600,2,Etobicoke Centre,1988
+Evelyn Gregory,6200,5,York South-Weston,1968
+Ethennonnhawahstihnen',13418,17,Don Valley North,2023
+Eglinton Square,10000,20,Scarborough Southwest,1983
+Forest Hill,10399,8,Eglinton-Lawrence,1962
+Fort York,16008,10,Spadina-Fort York,2014
+Flemingdon Park,7250,16,Don Valley East,1981
+Fairview,69458,17,Don Valley North,1976
+Gerrard/Ashdale,6504,14,Toronto-Danforth,1924
+Goldhawk Park,8000,23,Scarborough North,1992
+Guildwood,4577,24,Scarborough-Guildwood,1974
+Humber Bay,2400,3,Etobicoke-Lakeshore,1951
+Highland Creek,7000,25,Scarborough-Rouge Park,1994
+Hillcrest,7473,17,Don Valley North,1975
+High Park,8850,4,Parkdale-High Park,1916
+Humber Summit,9040,7,Humber River-Black Creek,1974
+Humberwood,5748,1,Etobicoke North,1996
+Jane/Dundas,11955,4,Parkdale-High Park,1975
+Jones,3636,14,Toronto-Danforth,1962
+Jane/Sheppard,7000,7,Humber River-Black Creek,1989
+Kennedy/Eglinton,6713,21,Scarborough Centre,1988
+Long Branch,6418,3,Etobicoke-Lakeshore,1955
+Leaside,12000,15,Don Valley West,1950
+Locke,11647,15,Don Valley West,1949
+Lillian H. Smith,38935,11,University-Rosedale,1995
+Main Street,8664,19,Beaches-East York,1921
+Malvern,25834,25,Scarborough-Rouge Park,1982
+Maria A. Shchuka,25475,12,Toronto-St. Paul's,1951
+McGregor Park,7793,21,Scarborough Centre,2004
+Mount Dennis,11350,5,York South-Weston,1951
+Mimico Centennial,17469,3,Etobicoke-Lakeshore,1915
+Mount Pleasant,5829,15,Don Valley West,1992
+Maryvale,11746,21,Scarborough Centre,1987
+Morningside,7000,25,Scarborough-Rouge Park,2006
+Northern District,48645,8,Eglinton-Lawrence,1984
+Northern Elms,3936,1,Etobicoke North,2005
+New Toronto,9925,3,Etobicoke-Lakeshore,1994
+Oakwood Village Library and Arts Centre,17270,12,Toronto-St. Paul's,1997
+Pape/Danforth,8175,14,Toronto-Danforth,1929
+Perth/Dupont,3627,9,Davenport,1983
+Parkdale,24083,4,Parkdale-High Park,1964
+Parliament Street,14634,13,Toronto Centre,1969
+Palmerston,8493,11,University-Rosedale,1971
+Port Union,5000,25,Scarborough-Rouge Park,1984
+Pleasant View,7000,17,Don Valley North,1975
+Queen/Saulter,2957,14,Toronto-Danforth,1980
+Riverdale,9658,14,Toronto-Danforth,1928
+Richview,47252,2,Etobicoke Centre,1966
+Runnymede,12034,4,Parkdale-High Park,1930
+Rexdale,5088,1,Etobicoke North,1959
+Sanderson,12702,10,Spadina-Fort York,1979
+Scarborough Civic Centre,14500,21,Scarborough Centre,2015
+St. Clair/Silverthorn,4850,9,Davenport,1981
+St. James Town,7800,13,Toronto Centre,2004
+St. Lawrence,4833,13,Toronto Centre,1982
+Spadina Road,3952,11,University-Rosedale,1977
+Steeles,5453,22,Scarborough-Agincourt,1987
+Swansea Memorial,1127,4,Parkdale-High Park,1959
+S. Walter Stewart,25847,14,Toronto-Danforth,1960
+Taylor Memorial,5000,20,Scarborough Southwest,1962
+Thorncliffe,11034,15,Don Valley West,1970
+Todmorden Room,554,14,Toronto-Danforth,1961
+Toronto Reference Library,426535,11,University-Rosedale,1977
+Victoria Village,5383,16,Don Valley East,1967
+Weston,11944,5,York South-Weston,1914
+Woodview Park,4110,7,Humber River-Black Creek,1964
+Woodside Square,9944,23,Scarborough North,1977
+Wychwood,15798,12,Toronto-St. Paul's,1916
+Yorkville,9053,11,University-Rosedale,1907
+York Woods,42176,7,Humber River-Black Creek,1970

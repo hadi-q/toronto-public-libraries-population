@@ -7,8 +7,13 @@
 # Pre-requisites: N/A
 
 #### Workspace setup ####
+
+# install.packages("tidyverse")
+# install.packages("janitor")
+# install.packages("arrow")
 library(tidyverse)
 library(janitor)
+library(arrow)
 
 #### Clean data ####
 library_raw_data <- read_csv("data/raw_data/library_raw_data.csv")
@@ -62,3 +67,15 @@ library_clean_data$Ward |>
 
 #### Save data ####
 write_csv(library_clean_data, "outputs/data/analysis_data.csv")
+
+# Clean census data
+
+# Read the CSV file and select specific rows and columns
+census_data <- read.csv("data/raw_data/CensusProfile2021BeachesEastYork.csv")
+selected_rows <- census_data[c(5:12), ]  # Select specific rows by index
+selected_cols <- selected_rows[, c("B","D")]  # Select specific columns by name or index
+
+# Write the selected rows and columns to a Parquet file
+write_parquet(selected_cols, "selected_data.parquet")
+
+# NOT WORKING FOR CENSUS DATA
